@@ -3,6 +3,7 @@ package com.dilekkaraca.taskmanagament.auth;
 import com.dilekkaraca.taskmanagament.auth.dto.AuthResponse;
 import com.dilekkaraca.taskmanagament.auth.dto.LoginRequest;
 import com.dilekkaraca.taskmanagament.auth.dto.RegisterRequest;
+import com.dilekkaraca.taskmanagament.exception.EmailAlreadyExistsException;
 import com.dilekkaraca.taskmanagament.user.Role;
 import com.dilekkaraca.taskmanagament.user.User;
 import com.dilekkaraca.taskmanagament.user.UserRepository;
@@ -46,12 +47,12 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("Email veya şifre hatalı"));
+                .orElseThrow(() -> new EmailAlreadyExistsException("Email veya şifre hatalı"));
 
         // Şifre doğru mu? (düz şifreyi hash ile karşılaştırır)
         boolean passwordOk = passwordEncoder.matches(request.password(), user.getPassword());
         if (!passwordOk) {
-            throw new IllegalArgumentException("Email veya şifre hatalı");
+            throw new EmailAlreadyExistsException("Email veya şifre hatalı");
         }
         String token=jwtService.generateToken(user.getEmail());
         Set<String> roles = user.getRoles()
